@@ -1,41 +1,31 @@
-// chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-//   if (request.action === "clickButtons") {
-//     var buttons = document.querySelectorAll("button");
-//     buttons.forEach(function (button) {
-//       if (button.innerText.toLowerCase() === "click") {
-//         button.click();
-//       }
-//     });
-//     sendResponse({ message: "Skipped" });
-//   }
-// });
+// Function to click the "Skip" button
+function clickButton() {
+    var buttons = document.querySelectorAll('button'); // Find all buttons on the page
 
-function clickButtons() {
-  var buttons = document.querySelectorAll("button");
-  buttons.forEach(function (button) {
-    if (button.innerText.toLowerCase() === "skip") {
-      button.click();
-    }
-  });
+    // Loop through each button
+    buttons.forEach(function(button) {
+        if (button.innerText === 'Skip') { // If the button's text is 'Skip'
+            button.click(); // Click the button
+        }
+    });
 }
 
-// Execute clickButtons() when the page finishes loading
-window.addEventListener("load", clickButtons);
+// Wait for the YouTube ad to start and then click the button
+function waitForAd() {
+    var adObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                clickButton(); // Call the function to click the button
+            }
+        });
+    });
 
-// Execute clickButtons() when new elements are added to the page dynamically
-var observer = new MutationObserver(function (mutationsList) {
-  for (var mutation of mutationsList) {
-    if (mutation.type === "childList") {
-      clickButtons();
-    }
-  }
-});
+    // Observe changes in the document's body
+    adObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
 
-observer.observe(document.body, { childList: true, subtree: true });
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.action === "clickButtons") {
-    clickButtons();
-    sendResponse({ message: "Skipped" });
-  }
-});
+// Call the function to wait for the ad
+waitForAd();
